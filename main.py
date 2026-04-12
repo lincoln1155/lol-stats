@@ -39,3 +39,5 @@ info = get_summoner_info()
 key = load_key()
 
 request_puuid_by_summoner_id(info[0], info[1], key)
+
+# push test
