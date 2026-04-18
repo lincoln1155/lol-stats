@@ -39,7 +39,7 @@ RIOT_API_KEY=your_api_key_here
 🗺️ Roadmap & Upcoming Changes
 The project is currently in a "Proof of Concept" phase. Planned improvements include:
 
-[ ] Asynchronous Refactoring (Priority): Replacing requests with aiohttp and asyncio to allow concurrent API calls, significantly speeding up the retrieval of multiple match details.
+[X] Asynchronous Refactoring (Priority): Replacing requests with aiohttp and asyncio to allow concurrent API calls, significantly speeding up the retrieval of multiple match details.
 
 [ ] Robust Error Handling: Implementing logic to handle Rate Limits (429), expired keys, and "Summoner Not Found" errors.
 

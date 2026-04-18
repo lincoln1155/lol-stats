@@ -2,6 +2,7 @@ import os
 import requests
 import asyncio
 import aiohttp
+import fastapi
 from dotenv import load_dotenv
 
 MAX_CONCURRENT_REQUESTS = 10

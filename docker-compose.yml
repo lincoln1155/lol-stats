@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  app:
+    build: . 
+    image: riot-api
+    container_name: meu-projeto-riot 
+    
+    
+    stdin_open: true 
+    tty: true
+    
+    
+    volumes:
+      - .:/app
+    
+    
+    env_file:
+      - .env
