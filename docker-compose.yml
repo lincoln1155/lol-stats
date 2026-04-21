@@ -1,19 +1,11 @@
-version: '3.8'
 
 services:
   app:
-    build: . 
-    image: riot-api
-    container_name: meu-projeto-riot 
-    
-    
-    stdin_open: true 
-    tty: true
-    
-    
+    build: .
+    ports:
+      - "8000:8000"  # Mapeia a porta do seu PC para a do container
     volumes:
-      - .:/app
-    
-    
+      - .:/app       # Sincroniza seu código para o --reload funcionar
     env_file:
-      - .env
+      - .env         # Carrega sua RIOT_API_KEY automaticamente
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
