@@ -46,6 +46,10 @@ app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 async def root():
     return FileResponse(str(STATIC_DIR / "index.html"))
 
+@app.get("/search/{region}/{riot_id}")
+async def search_page(region: str, riot_id: str):
+    return FileResponse(str(STATIC_DIR / "index.html"))
+
 async def request_puuid_by_summoner_id(session, riot_id, region, key):
     riot_id = riot_id.split("-")
     if len(riot_id) != 2:
