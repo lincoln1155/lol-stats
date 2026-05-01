@@ -12,10 +12,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from dotenv import load_dotenv
 from contextlib import asynccontextmanager
+from pydantic import BaseModel
+from google import genai
 
 from app.utils import riot_get
 from app.models import Match
 from app.database import Base, get_db, engine
+from app.chat import format_matches_for_prompt, generate_response, load_item_names
 
 MAX_CONCURRENT_REQUESTS = 10
 semaphore = asyncio.Semaphore(MAX_CONCURRENT_REQUESTS)
@@ -23,15 +26,19 @@ semaphore = asyncio.Semaphore(MAX_CONCURRENT_REQUESTS)
 load_dotenv(".env")
 RIOT_KEY = os.environ.get("RIOT_API_KEY")
 REDIS_URL = os.environ.get("REDIS_URL")
+GEMINI_KEY = os.environ.get("GEMINI_API_KEY")
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     app.state.session = aiohttp.ClientSession()
     app.state.redis = redis.from_url(REDIS_URL, decode_responses=True)
+    app.state.genai = genai.Client(api_key=GEMINI_KEY) if GEMINI_KEY else None
     
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
+    await load_item_names()
 
     yield
     await app.state.session.close()
@@ -96,6 +103,10 @@ def process_match_data(match_data, puuid):
             return stats
     return None
 
+class ChatRequest(BaseModel):
+    message: str
+    history: list[dict] | None = None
+
 @app.get("/matches/{region}/{riot_id}")
 async def search_matches(region: str, riot_id: str, db: AsyncSession = Depends(get_db)):
     session = app.state.session
@@ -142,3 +153,48 @@ async def search_matches(region: str, riot_id: str, db: AsyncSession = Depends(g
         "source": "api/db",
         "data": results
     }
+
+
+async def get_full_match_data(region: str, riot_id: str, db: AsyncSession):
+    """Fetch full match JSON data for a player. Reuses existing logic."""
+    session = app.state.session
+    puuid = await request_puuid_by_summoner_id(session, riot_id, region, RIOT_KEY)
+    match_ids = await get_matchid_by_puuid(session, puuid, region, RIOT_KEY)
+
+    db_matches = await search_matches_db(match_ids, db)
+
+    missing_ids = [m_id for m_id in match_ids if m_id not in db_matches]
+    if missing_ids:
+        tasks = [get_match_data_by_id(session, m_id, region, RIOT_KEY) for m_id in missing_ids]
+        fetched = await asyncio.gather(*tasks, return_exceptions=True)
+        for m_id, match_data in zip(missing_ids, fetched):
+            if isinstance(match_data, Exception):
+                continue
+            db_matches[m_id] = match_data
+            db.add(Match(match_id=m_id, summoner_puuid=puuid, data=match_data))
+        await db.commit()
+
+    # Return full match data in order + puuid
+    matches = [db_matches[m_id] for m_id in match_ids if m_id in db_matches]
+    return matches, puuid
+
+
+@app.post("/chat/{region}/{riot_id}")
+async def chat(region: str, riot_id: str, body: ChatRequest, db: AsyncSession = Depends(get_db)):
+    if not app.state.genai:
+        raise HTTPException(status_code=503, detail="AI chat is not configured. Set GEMINI_API_KEY in .env")
+
+    matches, puuid = await get_full_match_data(region, riot_id, db)
+
+    if not matches:
+        raise HTTPException(status_code=404, detail="No match data found for this player")
+
+    context = format_matches_for_prompt(matches, puuid)
+    response = await generate_response(
+        client=app.state.genai,
+        question=body.message,
+        matches_context=context,
+        chat_history=body.history,
+    )
+
+    return {"response": response}

@@ -12,6 +12,9 @@ services:
     environment:
       - DATABASE_URL=postgresql+asyncpg://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
       - REDIS_URL=redis://redis:6379/0
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - CHAT_DEBUG=${CHAT_DEBUG:-false}
+      - PYTHONUNBUFFERED=1
     depends_on:
       - db
       - redis

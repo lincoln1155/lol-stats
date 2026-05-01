@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <div class="container">
+    <div class="container" id="main-container">
         <h1>Match History</h1>
         <p class="subtitle">Search a player's recent League of Legends matches</p>
 
@@ -29,7 +29,64 @@
             <button id="search-btn" onclick="searchMatches()">Search</button>
         </div>
 
-        <div id="results"></div>
+        <div class="content-area" id="content-area">
+            <div id="results"></div>
+
+            <!-- Chat panel — hidden until matches load -->
+            <div class="chat-panel" id="chat-panel">
+                <!-- Initial compact state: just a textbox -->
+                <div class="chat-prompt" id="chat-prompt">
+                    <div class="chat-prompt-label">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                        </svg>
+                        Ask the AI Coach about these matches
+                    </div>
+                    <div class="chat-input-row">
+                        <input
+                            type="text"
+                            id="chat-input-compact"
+                            placeholder="e.g. Why did I lose that last game?"
+                            autocomplete="off"
+                        />
+                        <button id="chat-send-compact" onclick="sendFirstMessage()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="22" y1="2" x2="11" y2="13"/>
+                                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Expanded chat state: full conversation -->
+                <div class="chat-expanded" id="chat-expanded">
+                    <div class="chat-header">
+                        <div class="chat-header-title">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                            </svg>
+                            AI Coach
+                        </div>
+                        <span class="chat-model-badge">Gemini 2.5 Flash</span>
+                    </div>
+                    <div class="chat-messages" id="chat-messages"></div>
+                    <div class="chat-input-bar">
+                        <input
+                            type="text"
+                            id="chat-input"
+                            placeholder="Ask a follow-up question..."
+                            autocomplete="off"
+                        />
+                        <button id="chat-send" onclick="sendMessage()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="22" y1="2" x2="11" y2="13"/>
+                                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="/static/app.js"></script>
