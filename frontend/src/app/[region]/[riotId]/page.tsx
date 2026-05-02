@@ -39,7 +39,8 @@ export default function DashboardPage() {
     setDashboardData(null);
 
     try {
-      const res = await fetch(`http://localhost:8000/matches/${reg}/${id}`);
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const res = await fetch(`${apiUrl}/matches/${reg}/${id}`);
       if (!res.ok) {
         throw new Error('Player not found or Riot API error');
       }
@@ -74,8 +75,8 @@ export default function DashboardPage() {
         message: userMessage,
         history: chatMessages.slice(1) // exclude the initial welcome message from context
       };
-
-      const res = await fetch(`http://localhost:8000/chat/${currentRegion}/${currentRiotId}`, {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const res = await fetch(`${apiUrl}/chat/${currentRegion}/${currentRiotId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
