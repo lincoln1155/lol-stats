@@ -39,7 +39,7 @@ export default function DashboardPage() {
     setDashboardData(null);
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://lol-stats-org8.onrender.com';
       const res = await fetch(`${apiUrl}/matches/${reg}/${id}`);
       if (!res.ok) {
         throw new Error('Player not found or Riot API error');
@@ -75,7 +75,7 @@ export default function DashboardPage() {
         message: userMessage,
         history: chatMessages.slice(1) // exclude the initial welcome message from context
       };
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://lol-stats-org8.onrender.com';
       const res = await fetch(`${apiUrl}/chat/${currentRegion}/${currentRiotId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
