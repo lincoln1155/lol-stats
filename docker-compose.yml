@@ -19,6 +19,20 @@ services:
       - db
       - redis
 
+  frontend:
+    image: node:lts
+    working_dir: /workspace/frontend
+    volumes:
+      - .:/workspace
+    ports:
+      - "3000:3000"
+    environment:
+      - WATCHPACK_POLLING=true
+      - CHOKIDAR_USEPOLLING=true
+    command: npm run dev
+    depends_on:
+      - app
+
   db:
     image: postgres:15
     environment:

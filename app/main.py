@@ -3,8 +3,8 @@ import aiohttp
 import redis.asyncio as redis
 from pathlib import Path
 from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.middleware.cors import CORSMiddleware
+
 from dotenv import load_dotenv
 from contextlib import asynccontextmanager
 from google import genai
@@ -34,16 +34,13 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
-app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(matches.router)
 app.include_router(chat.router)
-
-@app.get("/")
-async def root():
-    return FileResponse(str(STATIC_DIR / "index.html"))
-
-@app.get("/search/{region}/{riot_id}")
-async def search_page(region: str, riot_id: str):
-    return FileResponse(str(STATIC_DIR / "index.html"))
