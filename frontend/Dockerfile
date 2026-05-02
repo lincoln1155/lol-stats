@@ -1,11 +1,11 @@
 FROM node:20-alpine AS builder
 
+# Frontend dockerfile
 WORKDIR /app
-COPY frontend/package.json frontend/package-lock.json ./
+COPY package.json package-lock.json ./
 RUN npm ci
 
-COPY frontend/ ./
-# Enable standalone output by ensuring it's in next.config.ts
+COPY . ./
 RUN npm run build
 
 FROM node:20-alpine AS runner
