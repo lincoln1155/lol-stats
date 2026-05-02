@@ -9,7 +9,7 @@ export default function DashboardPage() {
   const params = useParams();
   const router = useRouter();
 
-  const currentRegion = params.region as str;
+  const currentRegion = params.region as string;
   const currentRiotId = decodeURIComponent(params.riotId as string);
 
   const [loading, setLoading] = useState(true);
