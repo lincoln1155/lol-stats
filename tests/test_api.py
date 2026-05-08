@@ -3,14 +3,24 @@ from app.main import app
 
 client = TestClient(app)
 
-def test_root_returns_html():
-    # Verify if the root route (/) returns HTML successfully (status 200)
-    response = client.get("/")
-    assert response.status_code == 200
-    assert "text/html" in response.headers["content-type"]
 
-def test_search_returns_html():
-    # Verify if the search route (/search/{region}/{riot_id}) returns HTML correctly
-    response = client.get("/search/br1/Faker-T1")
+def test_openapi_schema_is_served():
+    response = client.get("/openapi.json")
     assert response.status_code == 200
-    assert "text/html" in response.headers["content-type"]
+    assert response.headers["content-type"].startswith("application/json")
+
+
+def test_registered_routes_are_exposed_in_schema():
+    response = client.get("/openapi.json")
+    paths = response.json()["paths"]
+
+    assert "/matches/{region}/{riot_id}" in paths
+    assert "get" in paths["/matches/{region}/{riot_id}"]
+
+    assert "/chat/{region}/{riot_id}" in paths
+    assert "post" in paths["/chat/{region}/{riot_id}"]
+
+
+def test_unknown_route_returns_404():
+    response = client.get("/this-route-does-not-exist")
+    assert response.status_code == 404
